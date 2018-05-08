@@ -13,7 +13,7 @@ class GeopositionField(models.Field):
     description = _("A geoposition (latitude and longitude)")
 
     def __init__(self, *args, **kwargs):
-        kwargs['max_length'] = 42
+        kwargs['max_length'] = 52
         super(GeopositionField, self).__init__(*args, **kwargs)
 
     def get_internal_type(self):
