@@ -27,20 +27,20 @@ class GeopositionField(models.Field):
         if isinstance(value, Geoposition):
             return value
         if isinstance(value, list):
-            return Geoposition(value[0], value[1])
+            return Geoposition(value[1], value[2], value[0]) if len(value) == 3 else Geoposition(value[0], value[1])
 
         # default case is string
         value_parts = value.rsplit(',')
         try:
-            geohash = value_parts[0]
+            geohash = value_parts[0] if len(value_parts) == 3 else None
         except IndexError:
             geohash = None
         try:
-            latitude = value_parts[1]
+            latitude = value_parts[1 if len(value_parts) == 3 else 0]
         except IndexError:
             latitude = '0.0'
         try:
-            longitude = value_parts[2]
+            longitude = value_parts[2 if len(value_parts) == 3 else 1]
         except IndexError:
             longitude = '0.0'
 
