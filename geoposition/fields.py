@@ -83,12 +83,15 @@ class GeoSearchMatchedLookup(Lookup):
         params = rhs_params[0]
         if params and not self.bilateral_transforms:
             rhs_params = geo_expand(params)
-            for i in range(0, len(rhs_params)):
+            rhs_params_count = len(rhs_params)
+            if rhs_params_count:
+                rhs += '('
+            for i in range(0, rhs_params_count):
                 rhs_params[i] = "%s%%" % connection.ops.prep_for_like_query(rhs_params[i])
-                if i < len(rhs_params) - 1:
+                if i < rhs_params_count - 1:
                     rhs += lhs + ' like %s OR '
                 else:
-                    rhs += lhs + 'like %s'
+                    rhs += lhs + 'like %s)'
         return rhs, rhs_params
 
     def as_sql(self, compiler, connection):
