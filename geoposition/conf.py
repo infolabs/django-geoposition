@@ -9,18 +9,18 @@ class AppSettings(object):
         'MAP_OPTIONS': {},
         'MARKER_OPTIONS': {},
         'GOOGLE_MAPS_API_KEY': None,
+        'YANDEX_MAPS_API_KEY': None,
     }
     prefix = 'GEOPOSITION'
-    required_settings = ['GOOGLE_MAPS_API_KEY']
-
+    
     def __init__(self, django_settings):
         self.django_settings = django_settings
-
-        for setting in self.required_settings:
-            prefixed_name = '%s_%s' % (self.prefix, setting)
-            if not hasattr(self.django_settings, prefixed_name):
-                raise ImproperlyConfigured("The '%s' setting is required." % prefixed_name)
-
+        self.check_setting('WIDGET')  # 'yandex' or 'google'
+        
+        self.check_setting('{}_MAPS_API_KEY'.format(
+            self.django_settings.GEOPOSITION_WIDGET.upper())
+        )
+        
     def __getattr__(self, name):
         prefixed_name = '%s_%s' % (self.prefix, name)
         if hasattr(django_settings, prefixed_name):
@@ -28,6 +28,11 @@ class AppSettings(object):
         if name in self.defaults:
             return self.defaults[name]
         raise AttributeError("'AppSettings' object does not have a '%s' attribute" % name)
+    
+    def check_setting(self, setting):
+        prefixed_name = '%s_%s' % (self.prefix, setting)
+        if not hasattr(self.django_settings, prefixed_name):
+            raise ImproperlyConfigured("The '%s' setting is required." % prefixed_name)
 
 
 settings = AppSettings(django_settings)

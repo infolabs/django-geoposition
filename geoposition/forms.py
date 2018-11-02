@@ -3,7 +3,12 @@ from __future__ import unicode_literals
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from .widgets import GeopositionWidget
+from django.conf import settings as django_settings
+if django_settings.GEOPOSITION_WIDGET == 'yandex':
+    from .widgets import YandexGeopositionWidget as GeopositionWidget
+else:
+    from .widgets import GoogleGeopositionWidget as GeopositionWidget
+
 from . import Geoposition
 
 
