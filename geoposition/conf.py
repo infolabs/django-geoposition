@@ -9,17 +9,15 @@ class AppSettings(object):
         'MAP_OPTIONS': {},
         'MARKER_OPTIONS': {},
         'GOOGLE_MAPS_API_KEY': None,
-        'YANDEX_MAPS_API_KEY': None,
+        'YANDEX_MAPS_LANG': 'ru_RU',
     }
     prefix = 'GEOPOSITION'
 
     def __init__(self, django_settings):
         self.django_settings = django_settings
         self.check_setting('WIDGET')  # 'yandex' or 'google'
-
-        self.check_setting('{}_MAPS_API_KEY'.format(
-            self.django_settings.GEOPOSITION_WIDGET.upper())
-        )
+        if self.django_settings.GEOPOSITION_WIDGET == 'google':
+            self.check_setting('GOOGLE_MAPS_API_KEY')
 
     def __getattr__(self, name):
         prefixed_name = '%s_%s' % (self.prefix, name)

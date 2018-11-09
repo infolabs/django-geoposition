@@ -10,7 +10,23 @@ if (jQuery != undefined) {
 
       var mapDefaults = {
         center: [55.76, 37.64],
-        zoom: 18
+        zoom: 15,
+        type: 'yandex#map',
+        controls: [
+          'fullscreenControl',
+          'geolocationControl',
+          'zoomControl',
+        ]
+      };
+
+      var typeSelectorDefaults = {
+        mapTypes: [
+          'yandex#map',
+          'yandex#satellite'
+        ],
+        options: {
+          panoramasItemMode: 'off'
+        }
       };
 
       var placemarkDefaults = {
@@ -64,16 +80,16 @@ if (jQuery != undefined) {
           ).then(function(results) {
             var geoObjs = results.geoObjects.toArray();
             if (geoObjs.length) {
-              var updatePosition = function(props) {
-                var center = ymaps.util.bounds.getCenter(props.boundedBy);
+              var updatePosition = function(geoObj) {
+                var props = geoObj.properties.getAll();
+                var center = geoObj.geometry.getCoordinates();
                 map.setBounds(props.boundedBy);
                 placemark.geometry.setCoordinates(center);
-                doGeocode();
                 //google.maps.event.trigger(marker, 'dragend');
+                doGeocode();
               };
               if (geoObjs.length == 1) {
-                var props = geoObjs[0].properties.getAll();
-                updatePosition(props);
+                updatePosition(geoObjs[0]);
               } else {
                 var $ul = $('<ul />', {'class': 'geoposition-results'});
                 $.each(geoObjs, function(i, geoObj) {
@@ -81,7 +97,7 @@ if (jQuery != undefined) {
                   var $li = $('<li />');
                   $li.text(props.text);
                   $li.bind('click', function() {
-                    updatePosition(props);
+                    updatePosition(geoObj);
                     $li.closest('ul').remove();
                   });
                   $li.appendTo($ul);
@@ -123,9 +139,9 @@ if (jQuery != undefined) {
 
         $searchInput.appendTo($searchRow);
         $container.append($searchRow, $mapContainer, $addressRow);
-        map = new ymaps.Map($mapContainer[0], mapOptions);
-        map.setType('yandex#map');
-        map.controls.remove('searchControl')
+        map = new ymaps.Map($mapContainer[0], mapOptions, {suppressMapOpenBlock: true});
+        var typeSelector = new ymaps.control.TypeSelector(typeSelectorDefaults);
+        map.controls.add(typeSelector);
 
         placemarkOptions = $.extend({}, placemarkDefaults, placemarkCustomOptions);
 

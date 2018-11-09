@@ -48,12 +48,8 @@ class YandexGeopositionWidget(BaseGeopositionWidget):
         super(YandexGeopositionWidget, self).__init__(attrs=attrs)
 
     class Media:
-        lang = "ru_RU"
-        config_init = settings.django_settings.GEOPY_GEOCODER_CONFIG.get("init", None)
-        if (config_init and config_init.get("lang")):
-            lang = config_init.get("lang")
         js = (
-            '//api-maps.yandex.ru/2.1/?apikey=%s&lang=%s' % (settings.YANDEX_MAPS_API_KEY, lang),
+            '//api-maps.yandex.ru/2.1/?lang=%s' % settings.YANDEX_MAPS_LANG,
             'geoposition/geoposition_yandex.js',
         )
         css = {
