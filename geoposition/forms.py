@@ -4,11 +4,7 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 
 from django.conf import settings as django_settings
-if django_settings.GEOPOSITION_WIDGET == 'yandex':
-    from .widgets import YandexGeopositionWidget as GeopositionWidget
-else:
-    from .widgets import GoogleGeopositionWidget as GeopositionWidget
-
+from .widgets import YandexGeopositionWidget, GoogleGeopositionWidget
 from . import Geoposition
 
 
@@ -18,7 +14,11 @@ class GeopositionField(forms.MultiValueField):
     }
 
     def __init__(self, *args, **kwargs):
-        self.widget = GeopositionWidget()
+        if django_settings.GEOPOSITION_WIDGET == 'yandex':
+            self.widget = YandexGeopositionWidget()
+        else:
+            self.widget = GoogleGeopositionWidget()
+
         fields = (
             forms.DecimalField(label=_('latitude')),
             forms.DecimalField(label=_('longitude')),
