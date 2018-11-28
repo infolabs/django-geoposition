@@ -2,6 +2,24 @@
     overflow: hidden;
 }
 
+.geoposition-widget .geoposition-show-map td {
+    padding-top: 7px;
+}
+
+.geoposition-widget .geoposition-show-map span {
+    color: #447e9b;
+    border-bottom: 1px #447e9b dashed;
+    cursor: pointer;
+}
+
+.geoposition-widget span.error {
+    color: red;
+}
+
+.geoposition-widget .geoposition-show-map span:hover {
+    color: #036;
+}
+
 .geoposition-map {
     position: relative;
     margin: 6px 0;

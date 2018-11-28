@@ -26,6 +26,11 @@ class BaseGeopositionWidget(forms.MultiWidget):
         return [None, None]
 
     def format_output(self, rendered_widgets):
+        if settings.WIDGET == 'yandex':
+            map_url = 'https://api-maps.yandex.ru/2.1/?lang=%s' % settings.YANDEX_MAPS_LANG
+        else:
+            map_url = 'https://maps.google.com/maps/api/js?key=%s&language=%s' % (settings.GOOGLE_MAPS_API_KEY,
+                                                                                  settings.GOOGLE_MAPS_LANG)
         return render_to_string('geoposition/widgets/geoposition.html', {
             'latitude': {
                 'html': rendered_widgets[0],
@@ -39,6 +44,7 @@ class BaseGeopositionWidget(forms.MultiWidget):
                 'map_widget_height': settings.MAP_WIDGET_HEIGHT or 500,
                 'map_options': json.dumps(settings.MAP_OPTIONS),
                 'marker_options': json.dumps(settings.MARKER_OPTIONS),
+                'map_url': map_url,
             }
         })
 
@@ -49,7 +55,6 @@ class YandexGeopositionWidget(BaseGeopositionWidget):
 
     class Media:
         js = (
-            '//api-maps.yandex.ru/2.1/?lang=%s' % settings.YANDEX_MAPS_LANG,
             'geoposition/geoposition_yandex.js',
         )
         css = {
@@ -63,7 +68,6 @@ class GoogleGeopositionWidget(BaseGeopositionWidget):
 
     class Media:
         js = (
-            '//maps.google.com/maps/api/js?key=%s' % settings.GOOGLE_MAPS_API_KEY,
             'geoposition/geoposition.js',
         )
         css = {

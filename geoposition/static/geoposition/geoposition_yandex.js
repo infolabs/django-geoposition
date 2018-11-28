@@ -6,7 +6,6 @@ if (jQuery != undefined) {
 
 (function($) {
   $(document).ready(function() {
-    ymaps.ready(function() {
 
       var mapDefaults = {
         center: [55.76, 37.64],
@@ -43,10 +42,12 @@ if (jQuery != undefined) {
             $addressRow = $('<div class="geoposition-address" />'),
             $searchRow = $('<div class="geoposition-search" />'),
             $searchInput = $('<input>', {'type': 'search', 'placeholder': 'Start typing an address …'}),
+            $showMap = $container.find('.geoposition-show-map span'),
             $latitudeField = $container.find('input.geoposition:eq(0)'),
             $longitudeField = $container.find('input.geoposition:eq(1)'),
             latitude = parseFloat($latitudeField.val()) || null,
             longitude = parseFloat($longitudeField.val()) || null,
+            mapUrl,
             map,
             mapOptions,
             mapCustomOptions,
@@ -54,9 +55,9 @@ if (jQuery != undefined) {
             placemarkCustomOptions,
             placemark;
 
+        mapUrl = $container.attr('data-map-url');
         mapCustomOptions = JSON.parse($container.attr('data-map-options'));
         placemarkCustomOptions = JSON.parse($container.attr('data-marker-options'));
-        $mapContainer.css('height', $container.attr('data-map-widget-height') + 'px');
 
         function doGeocode() {
           ymaps.geocode(
@@ -85,8 +86,7 @@ if (jQuery != undefined) {
                 var center = geoObj.geometry.getCoordinates();
                 map.setBounds(props.boundedBy);
                 placemark.geometry.setCoordinates(center);
-                //google.maps.event.trigger(marker, 'dragend');
-                doGeocode();
+                placemark.events.fire("dragend");
               };
               if (geoObjs.length == 1) {
                 updatePosition(geoObjs[0]);
@@ -108,27 +108,6 @@ if (jQuery != undefined) {
           });
         }
 
-        var autoSuggestTimer = null;
-        $searchInput.bind('keydown', function(e) {
-          if (autoSuggestTimer) {
-            clearTimeout(autoSuggestTimer);
-            autoSuggestTimer = null;
-          }
-          // if enter, search immediately
-          if (e.keyCode == 13) {
-            e.preventDefault();
-            doSearch();
-          }
-          else {
-            // otherwise, search after a while after typing ends
-            autoSuggestTimer = setTimeout(function(){
-              doSearch();
-            }, 1000);
-          }
-        }).bind('abort', function() {
-          $(this).parent().find('ul.geoposition-results').remove();
-        });
-
         mapOptions = $.extend({}, mapDefaults, mapCustomOptions);
         if (!(latitude === null && longitude === null && mapOptions['center'])) {
           mapOptions['center'] = [latitude, longitude];
@@ -137,46 +116,92 @@ if (jQuery != undefined) {
           mapOptions['zoom'] = latitude && longitude ? 15 : 1;
         }
 
-        $searchInput.appendTo($searchRow);
-        $container.append($searchRow, $mapContainer, $addressRow);
-        map = new ymaps.Map($mapContainer[0], mapOptions, {suppressMapOpenBlock: true});
-        var typeSelector = new ymaps.control.TypeSelector(typeSelectorDefaults);
-        map.controls.add(typeSelector);
+        $latitudeField.closest('tr').hide();
+        $longitudeField.closest('tr').hide();
 
-        placemarkOptions = $.extend({}, placemarkDefaults, placemarkCustomOptions);
+        function showMap() {
+          $latitudeField.closest('tr').show();
+          $longitudeField.closest('tr').show();
 
-        if (!(latitude === null && longitude === null && placemarkOptions['geometry'])) {
-          placemarkOptions['geometry'] = [latitude, longitude];
+          $searchInput.appendTo($searchRow);
+          $container.append($searchRow, $mapContainer, $addressRow);
+          $mapContainer.css('height', $container.attr('data-map-widget-height') + 'px');
+
+          var autoSuggestTimer = null;
+          $searchInput.bind('keydown', function(e) {
+            if (autoSuggestTimer) {
+              clearTimeout(autoSuggestTimer);
+              autoSuggestTimer = null;
+            }
+            // if enter, search immediately
+            if (e.keyCode == 13) {
+              e.preventDefault();
+              doSearch();
+            }
+            else {
+              // otherwise, search after a while after typing ends
+              autoSuggestTimer = setTimeout(function(){
+                doSearch();
+              }, 1000);
+            }
+          }).bind('abort', function() {
+            $(this).parent().find('ul.geoposition-results').remove();
+          });
+
+          ymaps.ready(function() {
+            map = new ymaps.Map($mapContainer[0], mapOptions, {suppressMapOpenBlock: true});
+            var typeSelector = new ymaps.control.TypeSelector(typeSelectorDefaults);
+            map.controls.add(typeSelector);
+
+            placemarkOptions = $.extend({}, placemarkDefaults, placemarkCustomOptions);
+
+            if (!(latitude === null && longitude === null && placemarkOptions['geometry'])) {
+              placemarkOptions['geometry'] = [latitude, longitude];
+            }
+            placemark = new ymaps.Placemark(
+              placemarkOptions.geometry, placemarkOptions.properties, placemarkOptions.options
+            );
+            map.geoObjects.add(placemark);
+
+            placemark.events.add("dragend", function(e) {
+              var pos = e.originalEvent.target.geometry.getCoordinates();
+              $latitudeField.val(pos[0]);
+              $longitudeField.val(pos[1]);
+              doGeocode();
+            });
+
+            if ($latitudeField.val() && $longitudeField.val()) {
+              doGeocode();
+            }
+
+            $latitudeField.add($longitudeField).bind('keyup', function(e) {
+              var latitude = parseFloat($latitudeField.val()) || 0;
+              var longitude = parseFloat($longitudeField.val()) || 0;
+              map.setCenter([latitude, longitude]);
+              map.setZoom(15);
+              placemark.geometry.setCoordinates([latitude, longitude]);
+              doGeocode();
+            });
+          });
         }
-        placemark = new ymaps.Placemark(
-          placemarkOptions.geometry, placemarkOptions.properties, placemarkOptions.options
-        );
-        map.geoObjects.add(placemark);
 
-        placemark.events.add("dragend", function(e) {
-          var pos = e.originalEvent.target.geometry.getCoordinates();
-          $latitudeField.val(pos[0]);
-          $longitudeField.val(pos[1]);
-          doGeocode();
-        });
-
-        if ($latitudeField.val() && $longitudeField.val()) {
-          //google.maps.event.trigger(marker, 'dragend');
-          doGeocode();
+        function showError() {
+          var $err = $('<span/>', {'class': 'error'}).html('Error loading map');
+          $container.append($err);
         }
 
-        $latitudeField.add($longitudeField).bind('keyup', function(e) {
-          var latitude = parseFloat($latitudeField.val()) || 0;
-          var longitude = parseFloat($longitudeField.val()) || 0;
-          map.setCenter([latitude, longitude]);
-          map.setZoom(15);
-          placemark.geometry.setCoordinates([latitude, longitude]);
-          doGeocode();
-        });
-
-      });
+        if (latitude && longitude) {
+          $showMap.remove();
+          $.getScript(mapUrl).done(showMap).fail(showError);
+        } else {
+          $showMap.click(function() {
+            $.getScript(mapUrl).done(showMap).fail(showError);
+            this.remove();
+          });
+        }
 
     });
+
   });
 
 })(django.jQuery);

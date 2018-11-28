@@ -10,6 +10,7 @@ class AppSettings(object):
         'MARKER_OPTIONS': {},
         'GOOGLE_MAPS_API_KEY': None,
         'YANDEX_MAPS_LANG': 'ru_RU',
+        'GOOGLE_MAPS_LANG': 'ru',
         'WIDGET': 'yandex'
     }
     prefix = 'GEOPOSITION'
