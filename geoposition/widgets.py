@@ -27,7 +27,8 @@ class BaseGeopositionWidget(forms.MultiWidget):
 
     def format_output(self, rendered_widgets):
         if settings.WIDGET == 'yandex':
-            map_url = 'https://api-maps.yandex.ru/2.1/?lang=%s' % settings.YANDEX_MAPS_LANG
+            map_url = 'https://api-maps.yandex.ru/2.1/?apikey=%s&lang=%s' % (settings.YANDEX_MAPS_API_KEY,
+                                                                             settings.YANDEX_MAPS_LANG)
         else:
             map_url = 'https://maps.google.com/maps/api/js?key=%s&language=%s' % (settings.GOOGLE_MAPS_API_KEY,
                                                                                   settings.GOOGLE_MAPS_LANG)
