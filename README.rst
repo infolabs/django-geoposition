@@ -138,6 +138,10 @@ You can also customize the height of the displayed map widget by setting
 ``GEOPOSITION_MAP_WIDGET_HEIGHT`` to an integer value (default is 480).
 
 
+Read also
+-------
+https://github.com/joway/django-geofield - GeoField used into Geoposition
+
 License
 -------
 
