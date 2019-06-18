@@ -31,10 +31,9 @@ class GeopositionField(models.Field):
 
         # default case is string
         value_parts = value.rsplit(',')
-        try:
-            geohash = value_parts[0] if len(value_parts) == 3 else None
-        except IndexError:
-            geohash = None
+
+        geohash = value_parts[0] if len(value_parts) == 3 else None
+
         try:
             latitude = value_parts[1 if len(value_parts) == 3 else 0]
         except IndexError:
