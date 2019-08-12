@@ -54,6 +54,11 @@ class Geoposition(object):
 
 
 def str_to_geoposition(value):
+    """
+    Create Geoposition from string (format: r'^\d+(?:\.\d+)?,\d+(?:\.\d+)?$')
+    :param value:
+    :return:
+    """
     value = value.split(',')
     for i in range(len(value)):
         value[i] = float(value[i])
