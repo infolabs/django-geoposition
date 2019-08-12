@@ -51,3 +51,10 @@ class Geoposition(object):
         self.geohash = geo_encode(
             float(self.latitude), float(self.longitude), GEOHASH_PRECISION
         )
+
+
+def str_to_geoposition(value):
+    value = value.split(',')
+    for i in range(len(value)):
+        value[i] = float(value[i])
+    return Geoposition(*value)
