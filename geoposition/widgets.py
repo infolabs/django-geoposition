@@ -19,6 +19,8 @@ class BaseGeopositionWidget(forms.MultiWidget):
         super(BaseGeopositionWidget, self).__init__(widgets, attrs)
 
     def decompress(self, value):
+        if isinstance(value, list):
+            return value
         if isinstance(value, six.text_type):
             return value.rsplit(',')
         if value:
@@ -51,7 +53,9 @@ class BaseGeopositionWidget(forms.MultiWidget):
 
     def render(self, name, value, attrs=None, renderer=None):
         value = self.decompress(value)
-        rendered_widgets = [x.render(name, value[i], {'class': name}) for i, x in enumerate(self.widgets)]
+        rendered_widgets = []
+        for i, widget in enumerate(self.widgets):
+            rendered_widgets.append(widget.render('{}_{}'.format(name, i), value[i], {'class': name}))
         return self.format_output(rendered_widgets)
 
 
