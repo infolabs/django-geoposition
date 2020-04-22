@@ -49,6 +49,11 @@ class BaseGeopositionWidget(forms.MultiWidget):
             }
         })
 
+    def render(self, name, value, attrs=None, renderer=None):
+        value = self.decompress(value)
+        rendered_widgets = [x.render(name, value[i], {'class': name}) for i, x in enumerate(self.widgets)]
+        return self.format_output(rendered_widgets)
+
 
 class YandexGeopositionWidget(BaseGeopositionWidget):
     def __init__(self, attrs=None):
