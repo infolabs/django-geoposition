@@ -30,7 +30,7 @@ class Geoposition(object):
         return "%s,%s" % (self.latitude, self.longitude)
 
     def __repr__(self):
-        return "Geoposition(%s)" % str(self)
+        return "<Geoposition %s>" % str(self)
 
     def __len__(self):
         return len(str(self))
