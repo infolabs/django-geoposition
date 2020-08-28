@@ -70,6 +70,22 @@ class GeopositionField(models.Field):
 
 @GeopositionField.register_lookup
 class GeoSearchMatchedLookup(Lookup):
+    """
+    If you want to query the points in expand area to eliminate the geohash's marginal error, you can :
+
+    pos = Point.objects.get(id=1)
+    points_matched = Point.objects.filter(position__geosearch=pos.position.geohash)
+
+    The '__geosearch' lookup will find all points have one of 9 ( 1 center point and 8 expand point) geohash.
+
+    If you want to query the points within a specific range , you should lookup the geohash table to get the geohash
+    length you want, then just search the cropped length.
+
+    pos = Point.objects.get(id=1)
+    points_matched = Point.objects.filter(position__geosearch=pos.position.geohash[0:4])
+
+    If you want to limit the distance strictly, you should writer your own codes to filter the result.
+    """
     lookup_name = 'geosearch'
 
     def __init__(self, lhs, rhs):
@@ -102,6 +118,14 @@ class GeoSearchMatchedLookup(Lookup):
 
 @GeopositionField.register_lookup
 class GeoPreciseSearchMatchedLookup(PatternLookup):
+    """
+    If you want to query the points whose geohash is matched exactly with the given point , you can:
+
+    pos = Point.objects.get(id=1)
+    points_matched = Point.objects.filter(position__geoprecise=pos.position.geohash)
+
+    The '__geoprecise' lookup will find all points have the same geohash.
+    """
     lookup_name = 'geoprecise'
 
     def __init__(self, lhs, rhs):
