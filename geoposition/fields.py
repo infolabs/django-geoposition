@@ -124,7 +124,16 @@ class GeoSearchMatchedLookup(Lookup):
     def as_sql(self, compiler, connection):
         lhs, lhs_params = self.process_lhs(compiler, connection)
         rhs, rhs_params = self.process_rhs(compiler, connection)
-        params = lhs_params + rhs_params
+        if isinstance(lhs_params, tuple):
+            # provide support for subqueries, in normal query lhs_params is list
+            lhs_params = list(lhs_params)
+            params = []
+            for rhs_param in rhs_params:
+                params.extend(lhs_params)
+                params.append(rhs_param)
+        else:
+            # normal query
+            params = lhs_params + rhs_params
         return rhs, params
 
 
