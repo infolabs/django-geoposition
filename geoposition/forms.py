@@ -2,9 +2,11 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-
+from django.core.exceptions import ValidationError
 from django.conf import settings as django_settings
+
 from .widgets import YandexGeopositionWidget, GoogleGeopositionWidget
+
 from . import Geoposition
 
 
@@ -18,7 +20,6 @@ class GeopositionField(forms.MultiValueField):
             self.widget = YandexGeopositionWidget()
         else:
             self.widget = GoogleGeopositionWidget()
-
         fields = (
             forms.DecimalField(label=_('latitude')),
             forms.DecimalField(label=_('longitude')),
@@ -36,3 +37,9 @@ class GeopositionField(forms.MultiValueField):
         if value_list:
             return value_list
         return ""
+
+    def clean(self, value):
+        cleaned_data = super(GeopositionField, self).clean(value)
+        if cleaned_data and bool(cleaned_data[0]) != bool(cleaned_data[1]):
+            raise ValidationError(self.error_messages['incomplete'], code='incomplete')
+        return cleaned_data
